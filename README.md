@@ -1,46 +1,134 @@
-This is a Kotlin Multiplatform project targeting Android, iOS, Web, Desktop (JVM).
+# Compose Multiplatform Preferences
 
-* [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
-
-* [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./shared/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
-    folder is the appropriate location.
-
-### Running the apps
-
-Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
-
-- Android app: `./gradlew :androidApp:assembleDebug`
-- Desktop app:
-  - Hot reload: `./gradlew :desktopApp:hotRun --auto`
-  - Standard run: `./gradlew :desktopApp:run`
-- Web app:
-  - Wasm target (faster, modern browsers): `./gradlew :webApp:wasmJsBrowserDevelopmentRun`
-  - JS target (slower, supports older browsers): `./gradlew :webApp:jsBrowserDevelopmentRun`
-- iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
-
-### Running tests
-
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
-
-- Android tests: `./gradlew :shared:testAndroidHostTest`
-- Desktop tests: `./gradlew :shared:jvmTest`
-- Web tests:
-  - Wasm target: `./gradlew :shared:wasmJsTest`
-  - JS target: `./gradlew :shared:jsTest`
-- iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
+A lightweight, developer-friendly Key-Value Storage library for **Kotlin Multiplatform (KMP)** and **Compose Multiplatform (CMP)** projects. It allows you to read, write, and manage preferences seamlessly across multiple targets (Android, iOS, Desktop/JVM, Web JS & Wasm) using a unified API and elegant Kotlin property delegates.
 
 ---
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
-[Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform/#compose-multiplatform),
-[Kotlin/Wasm](https://kotl.in/wasm/)…
+## 🚀 Platform Support & Storage Adapters
 
-We would appreciate your feedback on Compose/Web and Kotlin/Wasm in the public Slack channel [#compose-web](https://slack-chats.kotlinlang.org/c/compose-web).
-If you face any issues, please report them on [YouTrack](https://youtrack.jetbrains.com/newIssue?project=CMP).
+This library leverages native storage mechanisms under the hood for maximum performance, robustness, and platform idiomatic behavior:
+
+| Platform | Target | Underlying Storage Engine |
+| :--- | :--- | :--- |
+| **Android** | `androidMain` | `android.content.SharedPreferences` |
+| **iOS** | `iosMain` | `NSUserDefaults` (with customizable suite name) |
+| **Desktop** | `jvmMain` | `java.util.prefs.Preferences` |
+| **Web** | `jsMain` / `wasmJsMain` | `window.localStorage` |
+
+---
+
+## 🛠️ Setup & Initialization
+
+### 1. Android
+On Android, `KeyValueStorageFactory` requires a `Context` parameter to initialize `SharedPreferences`:
+
+```kotlin
+// In your Android application or Activity
+val factory = KeyValueStorageFactory(context)
+val storage: KeyValueStorage = factory.create(name = "my_app_preferences")
+```
+
+### 2. iOS, JVM, and Web (JS / Wasm)
+For all other platforms, the factory does not require any parameters:
+
+```kotlin
+val factory = KeyValueStorageFactory()
+val storage: KeyValueStorage = factory.create(name = "my_app_preferences")
+```
+
+---
+
+## 💡 Usage Guide
+
+### 1. Basic CRUD Operations
+The `KeyValueStorage` interface provides direct, type-safe getter and setter methods:
+
+```kotlin
+// Writing values
+storage.putString("username", "JohnDoe")
+storage.putInt("login_count", 5)
+storage.putBoolean("is_premium", true)
+
+// Reading values with default values
+val username = storage.getString("username", defaultValue = "Guest")
+val loginCount = storage.getInt("login_count", defaultValue = 0)
+val isPremium = storage.getBoolean("is_premium", defaultValue = false)
+
+// Checking presence and removal
+if (storage.contains("username")) {
+    storage.remove("username")
+}
+
+// Clear all preferences
+storage.clear()
+```
+
+### 2. Elegant Property Delegates (Recommended)
+You can declare preferences as property delegates to read and write them like regular properties. The delegate automatically updates and fetches from the underlying storage.
+
+```kotlin
+import com.ganesh.composepref.*
+
+class UserSettings(storage: KeyValueStorage) {
+    // Read-write string delegate
+    var username by storage.string(key = "pref_username", defaultValue = "Guest")
+    
+    // Read-write integer delegate
+    var score by storage.int(key = "pref_high_score", defaultValue = 0)
+    
+    // Read-write boolean delegate
+    var isDarkTheme by storage.boolean(key = "pref_dark_theme", defaultValue = false)
+}
+```
+
+Usage in code:
+```kotlin
+val settings = UserSettings(storage)
+
+// Read values
+println(settings.username) // Prints "Guest" (or the saved value)
+
+// Write values (writes to disk/storage instantly)
+settings.username = "JaneDoe"
+settings.isDarkTheme = true
+```
+
+### 3. Namespaced Key-Value Storage
+If you need to partition or isolate preferences (e.g. per-user settings, different modules), use `NamespacedKeyValueStorage`. It acts as a wrapper and prefixes all keys automatically:
+
+```kotlin
+val mainStorage = KeyValueStorageFactory().create("app_settings")
+
+// Wrap storage with a custom namespace
+val userAStorage = NamespacedKeyValueStorage(mainStorage, namespace = "user_A")
+val userBStorage = NamespacedKeyValueStorage(mainStorage, namespace = "user_B")
+
+// Keys will be stored as "ns.user_A.theme" and "ns.user_B.theme"
+userAStorage.putString("theme", "dark")
+userBStorage.putString("theme", "light")
+```
+
+### 4. Unit Testing & UI Previews
+Use `InMemoryKeyValueStorage` to mock settings or preferences during unit tests or Compose UI Previews without touching disk/local storage.
+
+```kotlin
+@Composable
+@Preview
+fun AppPreview() {
+    // Pass in-memory storage for safe, sandboxed previews
+    val previewStorage = InMemoryKeyValueStorage()
+    App(storage = previewStorage)
+}
+```
+
+---
+
+## 🧪 Running Tests
+
+You can verify the library logic on each platform using Gradle tasks:
+
+* **Android Host Tests**: `./gradlew :shared:testAndroidHostTest`
+* **Desktop (JVM) Tests**: `./gradlew :shared:jvmTest`
+* **Web Wasm Tests**: `./gradlew :shared:wasmJsTest`
+* **Web JS Tests**: `./gradlew :shared:jsTest`
+* **iOS Simulator Tests**: `./gradlew :shared:iosSimulatorArm64Test`
