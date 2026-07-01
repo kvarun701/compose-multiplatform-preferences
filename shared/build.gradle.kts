@@ -12,7 +12,7 @@ plugins {
     signing
 }
 
-group = "com.github.kvarun701"
+group = "io.github.kvarun701"
 version = "1.0.0"
 
 kotlin {
@@ -86,10 +86,19 @@ val localProperties = Properties().apply {
         localPropertiesFile.inputStream().use { load(it) }
     }
 }
+localProperties.forEach { key, value ->
+    extra.set(key.toString(), value.toString())
+}
 
 publishing {
     publications.withType<MavenPublication> {
         artifactId = artifactId.replace("shared", "compose-pref")
+        
+        val javadocJarTask = tasks.register("javadocJarFor$name", Jar::class) {
+            archiveClassifier.set("javadoc")
+            archiveAppendix.set(name)
+        }
+        artifact(javadocJarTask)
         
         pom {
             name.set("Compose Multiplatform Preferences")
@@ -119,6 +128,10 @@ publishing {
     
     repositories {
         maven {
+            name = "Staging"
+            url = uri(layout.buildDirectory.dir("staging-repository"))
+        }
+        maven {
             name = "Sonatype"
             url = uri("https://central.sonatype.com/api/v1/publisher/deployments")
             credentials {
@@ -136,16 +149,12 @@ publishing {
 signing {
     val isSigningRequired = project.hasProperty("signing.keyId")
         || project.hasProperty("signing.key")
-        || localProperties.containsKey("signing.keyId")
-        || localProperties.containsKey("signing.key")
         || System.getenv("SIGNING_KEY") != null
     if (isSigningRequired) {
         val signingKey = System.getenv("SIGNING_KEY")
-            ?: localProperties.getProperty("signing.key")
-            ?: project.findProperty("signingKey")?.toString()
+            ?: project.findProperty("signing.key")?.toString()
         val signingPassword = System.getenv("SIGNING_PASSWORD")
-            ?: localProperties.getProperty("signing.password")
-            ?: project.findProperty("signingPassword")?.toString()
+            ?: project.findProperty("signing.password")?.toString()
         if (signingKey != null && signingPassword != null) {
             useInMemoryPgpKeys(signingKey, signingPassword)
         }
