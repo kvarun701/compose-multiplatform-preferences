@@ -140,7 +140,27 @@ userAStorage.putString("theme", "dark")
 userBStorage.putString("theme", "light")
 ```
 
-### 4. Unit Testing & UI Previews
+### 4. Reusable Preferences Editor UI (Compose Multiplatform)
+This library provides a fully functional Compose Multiplatform preferences editor/manager UI component out of the box. You can easily integrate this component into your UI to allow users to view, add, modify, and delete preferences under different namespaces:
+
+```kotlin
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import com.ganesh.composepref.App
+import com.ganesh.composepref.KeyValueStorageFactory
+
+@Composable
+fun SettingsScreen() {
+    // 1. Initialize your platform-specific KeyValueStorage
+    val factory = remember { KeyValueStorageFactory() } // (Pass context if on Android)
+    val myStorage = remember { factory.create("my_settings") }
+
+    // 2. Render the interactive preferences management interface
+    App(storage = myStorage)
+}
+```
+
+### 5. Unit Testing & UI Previews
 Use `InMemoryKeyValueStorage` to mock settings or preferences during unit tests or Compose UI Previews without touching disk/local storage.
 
 ```kotlin
