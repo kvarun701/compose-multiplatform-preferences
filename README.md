@@ -28,7 +28,7 @@ Add the dependency to the `commonMain` source set in your shared module's `build
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("com.github.kvarun701.compose-multiplatform-preferences:compose-pref:1.0.0")
+            implementation("io.github.kvarun701.compose-multiplatform-preferences:compose-pref:1.0.0")
         }
     }
 }
