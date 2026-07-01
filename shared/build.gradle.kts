@@ -1,5 +1,7 @@
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
+import java.io.FileInputStream
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -78,6 +80,13 @@ dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
 }
 
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { load(it) }
+    }
+}
+
 publishing {
     publications.withType<MavenPublication> {
         artifactId = artifactId.replace("shared", "compose-pref")
@@ -113,18 +122,30 @@ publishing {
             name = "Sonatype"
             url = uri("https://central.sonatype.com/api/v1/publisher/deployments")
             credentials {
-                username = System.getenv("SONATYPE_USERNAME") ?: project.findProperty("sonatypeUsername")?.toString()
-                password = System.getenv("SONATYPE_PASSWORD") ?: project.findProperty("sonatypePassword")?.toString()
+                username = System.getenv("SONATYPE_USERNAME")
+                    ?: localProperties.getProperty("sonatypeUsername")
+                    ?: project.findProperty("sonatypeUsername")?.toString()
+                password = System.getenv("SONATYPE_PASSWORD")
+                    ?: localProperties.getProperty("sonatypePassword")
+                    ?: project.findProperty("sonatypePassword")?.toString()
             }
         }
     }
 }
 
 signing {
-    val isSigningRequired = project.hasProperty("signing.keyId") || project.hasProperty("signing.key") || System.getenv("SIGNING_KEY") != null
+    val isSigningRequired = project.hasProperty("signing.keyId")
+        || project.hasProperty("signing.key")
+        || localProperties.containsKey("signing.keyId")
+        || localProperties.containsKey("signing.key")
+        || System.getenv("SIGNING_KEY") != null
     if (isSigningRequired) {
-        val signingKey = System.getenv("SIGNING_KEY") ?: project.findProperty("signingKey")?.toString()
-        val signingPassword = System.getenv("SIGNING_PASSWORD") ?: project.findProperty("signingPassword")?.toString()
+        val signingKey = System.getenv("SIGNING_KEY")
+            ?: localProperties.getProperty("signing.key")
+            ?: project.findProperty("signingKey")?.toString()
+        val signingPassword = System.getenv("SIGNING_PASSWORD")
+            ?: localProperties.getProperty("signing.password")
+            ?: project.findProperty("signingPassword")?.toString()
         if (signingKey != null && signingPassword != null) {
             useInMemoryPgpKeys(signingKey, signingPassword)
         }
