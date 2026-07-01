@@ -4,6 +4,24 @@ A lightweight, developer-friendly Key-Value Storage library for **Kotlin Multipl
 
 ---
 
+## 🌟 Why Choose This Library?
+
+If you are familiar with the popular `multiplatform-settings` library, here is how **Compose Multiplatform Preferences** compares and why it might be the right choice for your project:
+
+| Feature | `multiplatform-settings` | **`compose-multiplatform-preferences`** (Ours) |
+| :--- | :--- | :--- |
+| **Simple Key-Value Save** | ✅ Yes | **✅ Yes** |
+| **Kotlin Property Delegates** | ✅ Yes | **✅ Yes** |
+| **Out-of-the-box UI Editor** | ❌ No | **✅ Yes** (Drop-in Composable UI component) |
+| **Instant Compose Previews** | ❌ Harder | **✅ Easy** (via `InMemoryKeyValueStorage`) |
+| **Dynamic Key Namespacing** | ❌ Manual | **✅ Easy** (via `NamespacedKeyValueStorage`) |
+
+* **Drop-in UI Component**: Quickly build debug screens or user settings menus using the pre-built, interactive Composable preferences editor UI.
+* **Mocking & Preview Friendly**: Avoid complex platform mocks in tests and Compose UI previews by utilizing the native in-memory database adapter.
+* **Dynamic Partitioning**: Group and prefix keys seamlessly using namespaced wrappers on the fly.
+
+---
+
 ## 📦 Installation
 
 To use this library in your Kotlin Multiplatform project:
