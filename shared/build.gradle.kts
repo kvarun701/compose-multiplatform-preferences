@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     `maven-publish`
+    signing
 }
 
 group = "com.github.kvarun701"
@@ -80,5 +81,53 @@ dependencies {
 publishing {
     publications.withType<MavenPublication> {
         artifactId = artifactId.replace("shared", "compose-pref")
+        
+        pom {
+            name.set("Compose Multiplatform Preferences")
+            description.set("A lightweight Key-Value Storage library for Kotlin Multiplatform and Compose Multiplatform projects.")
+            url.set("https://github.com/kvarun701/compose-multiplatform-preferences")
+            
+            licenses {
+                license {
+                    name.set("The Apache License, Version 2.0")
+                    url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                }
+            }
+            developers {
+                developer {
+                    id.set("kvarun701")
+                    name.set("Varun")
+                    email.set("kvarun701@gmail.com")
+                }
+            }
+            scm {
+                connection.set("scm:git:git://github.com/kvarun701/compose-multiplatform-preferences.git")
+                developerConnection.set("scm:git:ssh://github.com/kvarun701/compose-multiplatform-preferences.git")
+                url.set("https://github.com/kvarun701/compose-multiplatform-preferences")
+            }
+        }
+    }
+    
+    repositories {
+        maven {
+            name = "Sonatype"
+            url = uri("https://central.sonatype.com/api/v1/publisher/deployments")
+            credentials {
+                username = System.getenv("SONATYPE_USERNAME") ?: project.findProperty("sonatypeUsername")?.toString()
+                password = System.getenv("SONATYPE_PASSWORD") ?: project.findProperty("sonatypePassword")?.toString()
+            }
+        }
+    }
+}
+
+signing {
+    val isSigningRequired = project.hasProperty("signing.keyId") || project.hasProperty("signing.key") || System.getenv("SIGNING_KEY") != null
+    if (isSigningRequired) {
+        val signingKey = System.getenv("SIGNING_KEY") ?: project.findProperty("signingKey")?.toString()
+        val signingPassword = System.getenv("SIGNING_PASSWORD") ?: project.findProperty("signingPassword")?.toString()
+        if (signingKey != null && signingPassword != null) {
+            useInMemoryPgpKeys(signingKey, signingPassword)
+        }
+        sign(publishing.publications)
     }
 }
