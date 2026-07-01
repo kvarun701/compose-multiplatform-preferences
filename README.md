@@ -1,5 +1,11 @@
 # Compose Multiplatform Preferences
 
+<p align="center">
+  <a href="https://medium.com/@varunpandit/compose-multiplatform-preferences-d0825ac070c2">
+    <img src="https://img.shields.io/badge/Medium-Read%20Article-black?logo=medium&style=for-the-badge" alt="Read on Medium" />
+  </a>
+</p>
+
 A lightweight, developer-friendly Key-Value Storage library for **Kotlin Multiplatform (KMP)** and **Compose Multiplatform (CMP)** projects. It allows you to read, write, and manage preferences seamlessly across multiple targets (Android, iOS, Desktop/JVM, Web JS & Wasm) using a unified API and elegant Kotlin property delegates.
 
 <p align="center">
