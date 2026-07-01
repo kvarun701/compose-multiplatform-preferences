@@ -4,6 +4,38 @@ A lightweight, developer-friendly Key-Value Storage library for **Kotlin Multipl
 
 ---
 
+## 📦 Installation
+
+To use this library in your Kotlin Multiplatform project:
+
+### 1. Add JitPack Repository
+Add JitPack to your dependency resolution repositories in `settings.gradle.kts`:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+```
+
+### 2. Add Dependency
+Add the dependency to the `commonMain` source set in your shared module's `build.gradle.kts`:
+
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation("com.github.kvarun701.compose-multiplatform-preferences:compose-pref:1.0.0")
+        }
+    }
+}
+```
+
+---
+
 ## 🚀 Platform Support & Storage Adapters
 
 This library leverages native storage mechanisms under the hood for maximum performance, robustness, and platform idiomatic behavior:

@@ -6,7 +6,11 @@ plugins {
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    `maven-publish`
 }
+
+group = "com.github.kvarun701"
+version = "1.0.0"
 
 kotlin {
     listOf(
@@ -71,4 +75,10 @@ kotlin {
 
 dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
+}
+
+publishing {
+    publications.withType<MavenPublication> {
+        artifactId = artifactId.replace("shared", "compose-pref")
+    }
 }
